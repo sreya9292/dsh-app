@@ -12,7 +12,7 @@ workflows:
       - chmod +x node_modules/.bin/cap   # ✅ fix permission error
       - npm run build
       - npx cap sync ios
-      - cd ios/App
+      - cd ios
       - xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/App.xcarchive
       - xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $CM_BUILD_DIR/build
     artifacts:
