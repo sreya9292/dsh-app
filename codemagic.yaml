@@ -9,6 +9,7 @@ workflows:
       cocoapods: default
     scripts:
       - npm install
+      - chmod +x node_modules/.bin/cap   # ✅ Permission fix
       - npm run build
       - npx cap sync ios
       - cd ios/App
