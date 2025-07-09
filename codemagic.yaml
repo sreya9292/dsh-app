@@ -4,12 +4,12 @@ workflows:
     environment:
       vars:
         CAPACITOR_CONFIG_FILE: "capacitor.config.json"
-      node: 18
+      node: 20               # ✅ updated from 18
       xcode: latest
       cocoapods: default
     scripts:
       - npm install
-      - chmod +x node_modules/.bin/cap   # ✅ Permission fix
+      - chmod +x node_modules/.bin/cap   # ✅ fix permission error
       - npm run build
       - npx cap sync ios
       - cd ios/App
