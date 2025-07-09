@@ -4,16 +4,15 @@ workflows:
     environment:
       vars:
         CAPACITOR_CONFIG_FILE: "capacitor.config.json"
-      node: 20               # ✅ updated from 18
+      node: 20
       xcode: latest
       cocoapods: default
     scripts:
       - npm install
-      - chmod +x node_modules/.bin/cap   # ✅ fix permission error
+      - chmod +x node_modules/.bin/cap
       - npm run build
       - npx cap sync ios
-      - cd ios
-      - xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/App.xcarchive
+      - xcodebuild -workspace ios/App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/App.xcarchive
       - xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $CM_BUILD_DIR/build
     artifacts:
       - build/*.ipa
