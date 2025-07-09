@@ -12,6 +12,9 @@ workflows:
       - chmod +x node_modules/.bin/cap
       - npm run build
       - npx cap sync ios
+      - cd ios
+      - pod install              # ✅ ensures App.xcworkspace is created
+      - cd ..
       - xcodebuild -workspace ios/App.xcworkspace -scheme App -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/App.xcarchive
       - xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/App.xcarchive -exportOptionsPlist exportOptions.plist -exportPath $CM_BUILD_DIR/build
     artifacts:
