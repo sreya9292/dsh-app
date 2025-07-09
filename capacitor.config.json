@@ -1,0 +1,6 @@
+{
+  "appId": "com.dsh.app",
+  "appName": "DSH",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

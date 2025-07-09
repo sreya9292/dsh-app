@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>DailySuperHeroes</title>
+  <!-- Fonts and Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bangers&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css" />
+  <script async src="https://www.instagram.com/embed.js"></script>
+  <script src="capacitor.js"></script>
+  <style>
+    /* --- Base & General Styles --- */
+    /*
+        FIX: Add universal box-sizing. This is a modern standard that prevents
+        padding and borders from adding to an element's total width, which is
+        the most common cause of overflow and layout issues.
+      */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #e63946;
+      --accent-color: #f59e0b;
+      --background-color: #f4f7fa;
+      --card-bg-color: #ffffff;
+      --text-color-dark: #111827;
+      --text-color-medium: #4b5563;
+      --text-color-light: #6b7280;
+      --border-color: #e5e7eb;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+        0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color-dark);
+      min-height: 100vh;
+      position: relative;
+      padding-bottom: 80px;
+      /* Space for bottom nav */
+      /* REMOVED: overflow-x: hidden; was hiding layout problems instead of fixing them. */
+      /* FIX: Explicitly remove the default browser margin */
+      margin: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* --- Typography --- */
+    .app-logo {
+      font-family: "Bangers", cursive;
+      letter-spacing: 1.5px;
+      font-size: 1.6rem;
+      color: var(--primary-color);
+    }
+
+    /* --- Animations --- */
+    .shimmer {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* --- Layout & Headers --- */
+    .app-header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 60px;
+      background-color: rgba(31, 41, 55, 1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+    }
+
+    .app-main {
+      padding: 1.5rem 1rem;
+    }
+
+    .header-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .header-button {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: color 0.2s, background-color 0.2s;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+
+    .header-button:hover {
+      color: var(--primary-color);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .header-button .ri-lg {
+      font-size: 1.5rem;
+    }
+
+    .header-spacer {
+      width: 2.5rem;
+    }
+
+    #favorite-btn.is-favorite i {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    /* --- Bottom Navigation --- */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background-color: rgba(31, 41, 55, 1);
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .nav-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: white;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: color 0.2s;
+    }
+
+    .nav-button i {
+      font-size: 1.375rem;
+    }
+
+    .nav-button.active {
+      color: var(--primary-color);
+    }
+
+    /* --- Blog Grid (Home & Favorites) --- */
+    .blog-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .shimmer-placeholder {
+      height: 15rem;
+      border-radius: 12px;
+    }
+
+    .blog-card {
+      background-color: var(--card-bg-color);
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-image-wrapper {
+      height: 10rem;
+      overflow: hidden;
+    }
+
+    .card-image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .blog-card:hover .card-image-wrapper img {
+      transform: scale(1.05);
+    }
+
+    .card-content {
+      padding: 1rem;
+    }
+
+    .card-content h2 {
+      font-weight: 600;
+      font-size: 1.125rem;
+      line-height: 1.4;
+      margin: 0 0 0.5rem 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-content p {
+      font-size: 0.875rem;
+      color: var(--text-color-light);
+      margin: 0;
+    }
+
+    /* --- Pagination --- */
+    .pagination-controls {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .show-more-button {
+      padding: 0.75rem 1.5rem;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .show-more-button:hover {
+      background-color: #c32d39;
+    }
+
+    .show-more-button:disabled {
+      background-color: var(--text-color-light);
+      cursor: not-allowed;
+    }
+
+    /* --- Message/Error Boxes --- */
+    .message-box {
+      padding: 2rem 1rem;
+      background-color: var(--card-bg-color);
+      color: var(--text-color-medium);
+      border-radius: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .message-box i {
+      font-size: 2.5rem;
+      color: var(--text-color-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .message-box.error {
+      background-color: #fff1f2;
+      color: #be123c;
+    }
+
+    .message-box.error i {
+      color: #f43f5e;
+    }
+
+    .retry-button {
+      margin-top: 0.75rem;
+      padding: 0.6rem 1.25rem;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* --- Blog Post Screen --- */
+    #blog-container {
+      padding: 0 0.5rem;
+    }
+
+    #blog-hero {
+      width: 100%;
+      height: 14rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    #blog-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #blog-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+
+    #blog-date {
+      color: var(--text-color-light);
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .blog-content {
+      color: var(--text-color-dark);
+      font-size: 1rem;
+    }
+
+    .blog-content img,
+    .blog-content .instagram-media {
+      max-width: 100%;
+      height: auto;
+      margin: 1.5rem auto !important;
+      border-radius: 12px;
+    }
+
+    .blog-content p {
+      margin-bottom: 1rem;
+      line-height: 1.7;
+    }
+
+    .blog-content h1,
+    .blog-content h2,
+    .blog-content h3,
+    .blog-content h4,
+    .blog-content h5 {
+      margin: 2rem 0 1rem 0;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .blog-content blockquote {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border-left: 4px solid var(--primary-color);
+      background-color: #eef2f5;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      color: var(--text-color-medium);
+    }
+
+    .blog-content a {
+      color: var(--primary-color);
+      font-weight: 500;
+      text-decoration: none;
+      border-bottom: 2px solid #f9a3a9;
+    }
+
+    .blog-content a:hover {
+      border-bottom-color: var(--primary-color);
+    }
+
+    /* Blog Post Loading State */
+    #blog-container.is-loading #blog-hero,
+    #blog-container.is-loading #blog-title,
+    #blog-container.is-loading #blog-date,
+    #blog-container.is-loading #blog-content .loading-line {
+      animation: shimmer 1.5s infinite linear;
+    }
+
+    #blog-container.is-loading #blog-hero {
+      background-color: #e0e0e0;
+    }
+
+    #blog-container.is-loading #blog-title {
+      height: 2.25rem;
+      border-radius: 8px;
+      background-color: #e0e0e0;
+    }
+
+    #blog-container.is-loading #blog-date {
+      height: 1.25rem;
+      width: 10rem;
+      border-radius: 8px;
+      background-color: #e0e0e0;
+    }
+
+    #blog-container.is-loading #blog-content .loading-line {
+      height: 1rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- App Screens -->
+  <div id="app-container">
+    <!-- Home Screen -->
+    <div id="home-screen">
+      <header class="app-header">
+        <h1 class="app-logo">DailySuperHeroes</h1>
+        <button id="refresh-btn" class="header-button" aria-label="Refresh Posts">
+          <i class="ri-refresh-line ri-lg"></i>
+        </button>
+      </header>
+      <main class="app-main">
+        <div id="blog-grid" class="blog-grid">
+          <div class="shimmer shimmer-placeholder"></div>
+          <div class="shimmer shimmer-placeholder"></div>
+        </div>
+        <div id="pagination-controls" class="pagination-controls"></div>
+      </main>
+    </div>
+
+    <!-- Favorites Screen -->
+    <div id="favorites-screen" class="hidden">
+      <header class="app-header">
+        <div class="header-spacer"></div>
+        <h2 class="header-title">Favorites</h2>
+        <div class="header-spacer"></div>
+      </header>
+      <main class="app-main">
+        <div id="favorites-grid" class="blog-grid"></div>
+      </main>
+    </div>
+
+    <!-- Individual Blog Screen -->
+    <div id="blog-screen" class="hidden">
+      <header class="app-header">
+        <button id="back-btn" class="header-button" aria-label="Go Back">
+          <i class="ri-arrow-left-line ri-lg"></i>
+        </button>
+        <button id="favorite-btn" class="header-button" aria-label="Add to Favorites">
+          <i class="ri-star-line ri-lg"></i>
+        </button>
+      </header>
+      <main class="app-main">
+        <div id="blog-container"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Fixed Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button id="nav-home" class="nav-button active" aria-label="Home">
+      <i class="ri-home-5-line"></i><span>Home</span>
+    </button>
+    <button id="nav-favorites" class="nav-button" aria-label="Favorites">
+      <i class="ri-star-line"></i><span>Favorites</span>
+    </button>
+  </nav>
+
+  <!-- JAVASCRIPT LOGIC (Unchanged) -->
+  <script id="favorites-service">
+    document.addEventListener("DOMContentLoaded", () => {
+      const FAVORITES_KEY = 'superheroAppFavoritesV2';
+      let favoritePostIds = new Set();
+      const loadFavorites = () => {
+        const stored = localStorage.getItem(FAVORITES_KEY);
+        favoritePostIds = new Set(stored ? JSON.parse(stored) : []);
+      };
+      const saveFavorites = () => localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favoritePostIds]));
+      loadFavorites();
+      window.favoritesService = {
+        addFavorite: (id) => { favoritePostIds.add(id); saveFavorites(); },
+        removeFavorite: (id) => { favoritePostIds.delete(id); saveFavorites(); },
+        isFavorite: (id) => favoritePostIds.has(id),
+        getFavoriteIds: () => [...favoritePostIds],
+      };
+    });
+  </script>
+  <script id="api-service">
+    document.addEventListener("DOMContentLoaded", () => {
+      const API_URL = "https://dailysuperheroes.com/wp-json/wp/v2/posts";
+      const POSTS_PER_PAGE = 10;
+      let allPosts = new Map();
+      let currentPage = 1;
+      let totalPages = 1;
+      async function fetchBlogPosts(isLoadMore = false) {
+        const ui = window.uiRenderer;
+        if (isLoadMore) {
+          currentPage++;
+          ui.setLoadMoreButtonState(true);
+        } else {
+          currentPage = 1;
+          allPosts.clear();
+          ui.showHomeLoading();
+          ui.renderPaginationControls(false);
+        }
+        try {
+          const response = await fetch(`${API_URL}?_embed&per_page=${POSTS_PER_PAGE}&page=${currentPage}`);
+          if (!response.ok) throw new Error("Network response was not ok");
+          totalPages = parseInt(response.headers.get('X-WP-TotalPages'));
+          const newPosts = await response.json();
+          newPosts.forEach(post => allPosts.set(post.id, post));
+          if (!isLoadMore && newPosts.length > 0) {
+            window.notificationService?.checkForNewPost(newPosts[0]);
+          }
+          ui.renderBlogGrid(newPosts, isLoadMore);
+          ui.renderPaginationControls(currentPage < totalPages);
+        } catch (error) {
+          console.error("Error fetching blog posts:", error);
+          if (!isLoadMore) ui.showHomeError("Failed to load posts. Please try again.");
+        } finally {
+          if (isLoadMore) ui.setLoadMoreButtonState(false);
+        }
+      }
+      async function fetchSingleBlogPost(slug) {
+        const ui = window.uiRenderer;
+        const cachedPost = [...allPosts.values()].find(p => p.slug === slug);
+        if (cachedPost) {
+          ui.renderBlogPost(cachedPost);
+          return;
+        }
+        try {
+          const response = await fetch(`${API_URL}?slug=${slug}&_embed`);
+          if (!response.ok) throw new Error("Network response not ok");
+          const posts = await response.json();
+          if (posts.length === 0) throw new Error(`No post with slug: ${slug}`);
+          const post = posts[0];
+          allPosts.set(post.id, post);
+          ui.renderBlogPost(post);
+        } catch (error) {
+          console.error("Error fetching single post:", error);
+          ui.renderBlogPostError("Failed to load this article.");
+        }
+      }
+      window.blogService = {
+        fetchBlogPosts, fetchSingleBlogPost,
+        getPostById: (id) => allPosts.get(id),
+        getPostsByIds: (ids) => ids.map(id => allPosts.get(id)).filter(Boolean)
+      };
+    });
+  </script>
+  <script id="ui-renderer">
+    document.addEventListener("DOMContentLoaded", () => {
+      const screens = { home: document.getElementById('home-screen'), favorites: document.getElementById('favorites-screen'), blog: document.getElementById('blog-screen') };
+      const navButtons = { home: document.getElementById('nav-home'), favorites: document.getElementById('nav-favorites') };
+      const blogGrid = document.getElementById("blog-grid");
+      const favoritesGrid = document.getElementById("favorites-grid");
+      let currentPostId = null;
+      const createBlogCard = (post) => {
+        const featuredMedia = post._embedded?.["wp:featuredmedia"]?.[0];
+        const imageUrl = featuredMedia ? featuredMedia.source_url : `https://readdy.ai/api/search-image?query=superhero%20comic%20style&width=400&height=300&seq=${post.id}`;
+        const title = post.title.rendered;
+        const date = new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+        const card = document.createElement("article");
+        card.className = "blog-card";
+        card.dataset.postSlug = post.slug;
+        card.innerHTML = `<div class="card-image-wrapper"><img src="${imageUrl}" alt="" loading="lazy"></div><div class="card-content"><h2>${title}</h2><p>${date}</p></div>`;
+        card.addEventListener("click", () => navigateTo('blog', { slug: post.slug, id: post.id }));
+        return card;
+      };
+      const renderBlogGrid = (posts, isAppending) => {
+        if (!isAppending) blogGrid.innerHTML = "";
+        if (posts.length === 0 && blogGrid.innerHTML === "") {
+          blogGrid.innerHTML = `<div class="message-box"><i class="ri-article-line"></i>No posts found.</div>`;
+          return;
+        }
+        posts.forEach(post => blogGrid.appendChild(createBlogCard(post)));
+      };
+      const renderFavoritesGrid = () => {
+        const favoriteIds = window.favoritesService.getFavoriteIds();
+        const favoritePosts = window.blogService.getPostsByIds(favoriteIds);
+        favoritesGrid.innerHTML = "";
+        if (favoritePosts.length === 0) {
+          favoritesGrid.innerHTML = `<div class="message-box"><i class="ri-star-smile-line"></i><p>No favorites yet!</p><p>Tap the star on an article to save it here.</p></div>`;
+          return;
+        }
+        favoritePosts.forEach(post => favoritesGrid.appendChild(createBlogCard(post)));
+      };
+      const renderBlogPost = (post) => {
+        const blogContainer = document.getElementById("blog-container");
+        currentPostId = post.id;
+        const featuredMedia = post._embedded?.["wp:featuredmedia"]?.[0];
+        const imageUrl = featuredMedia ? featuredMedia.source_url : `https://readdy.ai/api/search-image?query=superhero%20action&width=800&height=400&seq=${post.id}`;
+        const date = new Date(post.date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+        blogContainer.className = '';
+        blogContainer.innerHTML = `<div id="blog-hero"><img src="${imageUrl}" alt="${post.title.rendered}"></div><h1 id="blog-title">${post.title.rendered}</h1><p id="blog-date">${date}</p><div id="blog-content" class="blog-content">${post.content.rendered}</div>`;
+        updateFavoriteButton();
+        if (window.instgrm) window.instgrm.Embeds.process();
+      };
+      const updateFavoriteButton = () => {
+        const btn = document.getElementById("favorite-btn");
+        const icon = btn.querySelector("i");
+        if (window.favoritesService.isFavorite(currentPostId)) {
+          btn.classList.add("is-favorite");
+          icon.classList.replace("ri-star-line", "ri-star-fill");
+        } else {
+          btn.classList.remove("is-favorite");
+          icon.classList.replace("ri-star-fill", "ri-star-line");
+        }
+      };
+      const toggleFavorite = () => {
+        if (!currentPostId) return;
+        window.favoritesService.isFavorite(currentPostId) ? window.favoritesService.removeFavorite(currentPostId) : window.favoritesService.addFavorite(currentPostId);
+        updateFavoriteButton();
+      };
+      const navigateTo = (screenName, data = {}) => {
+        window.scrollTo(0, 0);
+        Object.values(screens).forEach(s => s.classList.add('hidden'));
+        screens[screenName].classList.remove('hidden');
+        Object.values(navButtons).forEach(b => {
+          b.classList.remove('active');
+          b.querySelector('i').classList.replace('ri-home-5-fill', 'ri-home-5-line');
+          b.querySelector('i').classList.replace('ri-star-fill', 'ri-star-line');
+        });
+        const navBtn = navButtons[screenName];
+        if (navBtn) {
+          navBtn.classList.add('active');
+          navBtn.querySelector('i').classList.replace('ri-home-5-line', 'ri-home-5-fill');
+          navBtn.querySelector('i').classList.replace('ri-star-line', 'ri-star-fill');
+        } else {
+          const parentTab = history.state?.page || 'home';
+          navButtons[parentTab]?.classList.add('active');
+        }
+
+        if (screenName === 'blog') {
+          history.pushState({ page: history.state?.page || 'home', slug: data.slug }, ``, `#/post/${data.slug}`);
+          showPostLoading();
+          window.blogService.fetchSingleBlogPost(data.slug);
+        } else if (screenName === 'favorites') {
+          history.pushState({ page: 'favorites' }, '', '#/favorites');
+          renderFavoritesGrid();
+        } else { // Home
+          history.pushState({ page: 'home' }, '', window.location.pathname.split('#')[0]);
+        }
+      };
+      const showPostLoading = () => {
+        const container = document.getElementById("blog-container");
+        container.className = 'is-loading';
+        container.innerHTML = `<div id="blog-hero"></div><h1 id="blog-title"></h1><p id="blog-date"></p><div id="blog-content" class="blog-content"><div class="loading-line"></div><div class="loading-line"></div></div>`;
+      };
+      window.uiRenderer = {
+        renderBlogGrid, renderBlogPost, navigateTo,
+        renderPaginationControls: (show) => {
+          const container = document.getElementById("pagination-controls");
+          container.innerHTML = show ? `<button id="show-more-btn" class="show-more-button">Show More</button>` : "";
+          if (show) container.querySelector("button").addEventListener('click', () => window.blogService.fetchBlogPosts(true));
+        },
+        setLoadMoreButtonState: (isLoading) => {
+          const btn = document.getElementById('show-more-btn');
+          if (btn) { btn.disabled = isLoading; btn.textContent = isLoading ? 'Loading...' : 'Show More'; }
+        },
+        showHomeLoading: () => { blogGrid.innerHTML = `<div class="shimmer shimmer-placeholder"></div><div class="shimmer shimmer-placeholder"></div><div class="shimmer shimmer-placeholder"></div>`; },
+        showHomeError: (msg) => {
+          blogGrid.innerHTML = `<div class="message-box error"><i class="ri-error-warning-line"></i><p>${msg}</p><button class="retry-button">Retry</button></div>`;
+          blogGrid.querySelector(".retry-button").addEventListener("click", () => window.blogService.fetchBlogPosts());
+        },
+        renderBlogPostError: (msg) => { document.getElementById("blog-container").innerHTML = `<div class="message-box error">${msg}</div>`; }
+      };
+      navButtons.home.addEventListener('click', () => navigateTo('home'));
+      navButtons.favorites.addEventListener('click', () => navigateTo('favorites'));
+      document.getElementById("back-btn").addEventListener("click", () => {
+        const previousPage = history.state?.page || 'home';
+        navigateTo(previousPage);
+      });
+      document.getElementById("refresh-btn").addEventListener("click", () => window.blogService.fetchBlogPosts());
+      document.getElementById("favorite-btn").addEventListener("click", toggleFavorite);
+    });
+  </script>
+  <script id="capacitor-integration">
+    document.addEventListener('deviceready', () => {
+      const { LocalNotifications, App } = Capacitor.Plugins;
+      const LATEST_POST_ID_KEY = 'latestPostId';
+      let hasPermission = false;
+
+      App.addListener('appUrlOpen', (event) => {
+        const slug = event.url.split('/post/').pop();
+        if (slug) {
+          window.uiRenderer.navigateTo('blog', { slug });
+        }
+      });
+
+      async function setupNotifications() {
+        try {
+          const permissionStatus = await LocalNotifications.checkPermissions();
+
+          // If permission is not granted, request it again
+          if (permissionStatus.display !== 'granted') {
+            const newStatus = await LocalNotifications.requestPermissions();
+            if (newStatus.display === 'granted') {
+              scheduleHourlyReminder();
+            } else {
+              console.warn('Notification permission denied');
+            }
+          } else {
+            scheduleHourlyReminder();
+          }
+        } catch (e) {
+          console.error("Error setting up notifications", e);
+        }
+      }
+
+      async function scheduleHourlyReminder() {
+        await LocalNotifications.cancel({ notifications: [{ id: 99 }] });
+        await LocalNotifications.schedule({
+          notifications: [{
+            title: "DailySuperHeroes", body: "Your daily dose of heroes is waiting!",
+            id: 99, schedule: { every: "hour", on: { minute: 0 }, repeats: true },
+            sound: null, smallIcon: 'res://mipmap/ic_launcher'
+          }]
+        });
+      }
+      async function checkForNewPost(latestPost) {
+        if (!hasPermission || !latestPost) return;
+        const lastKnownId = localStorage.getItem(LATEST_POST_ID_KEY);
+        const newPostId = latestPost.id.toString();
+        if (lastKnownId && newPostId !== lastKnownId) {
+          await LocalNotifications.schedule({
+            notifications: [{
+              title: "New Article Published!", body: latestPost.title.rendered,
+              id: parseInt(newPostId), sound: null, smallIcon: 'res://mipmap/ic_launcher',
+              extra: { url: `yourappscheme://post/${latestPost.slug}` }
+            }]
+          });
+        }
+        localStorage.setItem(LATEST_POST_ID_KEY, newPostId);
+      }
+      setupNotifications();
+      window.notificationService = { checkForNewPost };
+    }, false);
+  </script>
+  <script id="app-init">
+    document.addEventListener("DOMContentLoaded", () => {
+      const handleRouting = () => {
+        const hash = window.location.hash;
+        if (hash.startsWith('#/post/')) {
+          const slug = hash.substring(7);
+          if (slug) window.uiRenderer.navigateTo('blog', { slug });
+        } else if (hash === '#/favorites') {
+          window.uiRenderer.navigateTo('favorites');
+          if (!window.blogService.getPostsByIds(window.favoritesService.getFavoriteIds()).length) {
+            window.blogService.fetchBlogPosts();
+          }
+        } else {
+          window.uiRenderer.navigateTo('home');
+          window.blogService.fetchBlogPosts();
+        }
+      };
+      window.addEventListener("popstate", (event) => {
+        const hash = window.location.hash;
+        if (hash.startsWith('#/post/')) {
+          const slug = hash.substring(7);
+          window.uiRenderer.navigateTo('blog', { slug });
+        } else if (hash === '#/favorites') {
+          window.uiRenderer.navigateTo('favorites');
+        } else {
+          window.uiRenderer.navigateTo('home');
+        }
+      });
+      handleRouting();
+    });
+  </script>
+</body>
+
+</html>

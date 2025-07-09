@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>DailySuperHeroes</title>
+  <!-- Fonts and Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css" />
+  <script async src="https://www.instagram.com/embed.js"></script>
+  <script src="capacitor.js"></script>
+  <style>
+    /* --- Base & General Styles --- */
+:root {
+  --primary-color: #E63946; /* Red logo color */
+  --secondary-color: #0077B6; /* Muted ocean blue */
+  --background-color: #ffffff;
+  --card-bg-color: #f5f5f7;
+  --text-color: #1f2937; /* Dark gray for main text */
+  --text-color-medium: #4b5563; /* Medium gray */
+  --text-color-light: #6b7280; /* Light gray */
+  --border-color: #e0e0e0;
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+               0 4px 6px -4px rgba(0, 0, 0, 0.06);
+}
+
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      position: relative;
+      padding-bottom: 80px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .screen-container {
+      padding-bottom: 80px;
+    }
+
+    .app-main {
+      padding: 1rem;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+    
+    .section-link {
+        font-size: 0.875rem;
+        color: var(--primary-color);
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .category-tag {
+        font-size: 0.75rem;
+        color: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+    }
+
+    .category-tag.marvel { background-color: var(--primary-color); }
+    .category-tag.dc { background-color: var(--secondary-color); }
+    
+    /* --- Animations & Skeletons --- */
+    .skeleton {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite linear;
+    }
+    @keyframes skeleton-loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    .favorite-animation { animation: favorite-pulse 0.5s ease-in-out; }
+    @keyframes favorite-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+    }
+    
+    /* --- Common Header Styles --- */
+    .app-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      max-width: inherit;
+      height: 60px;
+      background-color: var(--background-color);
+      z-index: 10;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    /* --- Home Screen --- */
+    .home-header {
+        height: auto;
+        flex-direction: column;
+        align-items: normal;
+    }
+    .home-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    .app-logo {
+  font-family: 'Bangers', cursive; /* Funky comic/anime vibe */
+  font-size: 2rem;
+  color: #ff2d75; /* Bold pink-red */
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 0 #000, 4px 4px 0 #ffcc00; /* Anime-style outline + glow */
+  transform: skew(-5deg); /* Energetic tilt */
+  padding-bottom: 20px;
+}
+
+
+    .home-header-icons { display: flex; align-items: center; gap: 0.75rem; }
+    .home-header-icons i { font-size: 1.5rem; cursor: pointer; }
+    
+    .search-bar-wrapper { position: relative; }
+    .search-bar {
+        width: 100%;
+        background-color: var(--card-bg-color);
+        color: var(--text-color);
+        padding: 0.5rem 2.5rem;
+        border-radius: 8px;
+        border: none;
+        font-size: 0.875rem;
+    }
+    .search-bar:focus { outline: 1px solid var(--primary-color); }
+    .search-bar-wrapper i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-color-light);
+    }
+    #home-screen .app-main {
+      padding-top: 8rem; /* Space for fixed header */
+    }
+
+    /* Trending Stories */
+    .trending-scroll { display: flex; overflow-x: auto; gap: 1rem; padding-bottom: 0.5rem; scrollbar-width: none; }
+    .trending-scroll::-webkit-scrollbar { display: none; }
+    .trending-card {
+        flex-shrink: 0;
+        width: 12rem;
+        background-color: var(--card-bg-color);
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .trending-card .card-image-wrapper { position: relative; height: 7rem; }
+    .trending-card .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+    .trending-card .card-rank {
+        position: absolute; top: 0.5rem; right: 0.5rem; width: 1.5rem; height: 1.5rem;
+        display: flex; align-items: center; justify-content: center;
+        background-color: rgba(0, 0, 0, 0.4); border-radius: 50%;
+        font-size: 0.75rem; font-weight: 600;
+    }
+    .trending-card .card-content { padding: 0.75rem; }
+    .trending-card h3 {
+        font-size: 0.875rem; font-weight: 600; margin-top: 0.5rem; line-height: 1.3;
+        overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .card-meta {
+        display: flex; align-items: center; margin-top: 0.5rem;
+        font-size: 0.75rem; color: var(--text-color-light);
+    }
+    .card-meta span { margin: 0 0.25rem; }
+
+    /* Featured & Latest Stories */
+    .story-card {
+        background-color: var(--card-bg-color);
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+    .story-card .card-image-wrapper { position: relative; height: 12rem; }
+    .story-card .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+    .story-card .card-content { padding: 0.75rem; }
+    .story-card .card-content-header { display: flex; justify-content: space-between; align-items: center; }
+    .story-card .card-views { display: flex; align-items: center; font-size: 0.75rem; color: var(--text-color-light); }
+    .story-card .card-views i { margin-right: 0.25rem; }
+    .story-card h3 { font-size: 1rem; font-weight: 600; margin-top: 0.5rem; }
+    .story-card p {
+        font-size: 0.875rem; color: var(--text-color-medium); margin-top: 0.25rem; line-height: 1.4;
+        overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .story-card .card-meta { margin-top: 0.5rem; }
+    
+    .favorite-button {
+      position: absolute; top: 0.5rem; right: 0.5rem; width: 2rem; height: 2rem;
+      display: flex; align-items: center; justify-content: center;
+      background-color: rgba(0, 0, 0, 0.4); border-radius: 50%; cursor: pointer; z-index: 2;
+    }
+    .favorite-button i { color: white; }
+    .favorite-button i.is-favorite { color: var(--primary-color); }
+
+    /* Featured card specific styles */
+    .featured-card { position: relative; }
+    .featured-card .card-image-wrapper { height: 12rem; }
+    .featured-card .card-overlay {
+        position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 70%);
+        display: flex; flex-direction: column; justify-content: flex-end; padding: 1rem;
+    }
+    .featured-card .favorite-button { position: static; background: none; align-self: flex-end; }
+    .featured-card .card-overlay-content { display: flex; justify-content: space-between; align-items: flex-end; }
+    .featured-card .card-overlay-text h3 { font-size: 1.125rem; font-weight: 700; margin-top: 0.25rem; margin-bottom: 0.25rem; }
+
+    /* --- Blog Post Screen --- */
+    #blog-screen .blog-hero { position: relative; width: 100%; height: 16rem; }
+    #blog-screen .blog-hero img { width: 100%; height: 100%; object-fit: cover; }
+    #blog-screen .blog-hero-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; padding: 1rem;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .header-icon-button {
+      width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;
+      background-color: rgba(0,0,0,0.4); border-radius: 50%; cursor: pointer; border: none;
+    }
+    .header-icon-button i { color: white; font-size: 1.25rem; }
+    #blog-screen .header-icon-group { display: flex; gap: 0.5rem; }
+    #blog-screen .app-main { padding: 1rem; }
+    #blog-screen h1 { font-size: 1.5rem; font-weight: 700; margin-top: 0.5rem; margin-bottom: 0.75rem; }
+    #blog-screen .author-info { display: flex; align-items: center; margin-top: 0.75rem; margin-bottom: 1.25rem; }
+    #blog-screen .author-info img { width: 2.5rem; height: 2.5rem; border-radius: 50%; object-fit: cover; margin-right: 0.5rem; }
+    #blog-screen .author-details p { font-size: 0.875rem; font-weight: 500; }
+    #blog-screen .author-details div { font-size: 0.75rem; color: var(--text-color-light); }
+    .blog-content { color: var(--text-color-medium); line-height: 1.7; }
+    .blog-content img { max-width: 100%; height: auto; margin: 1.5rem 0; border-radius: 8px; }
+    .blog-content p { margin-bottom: 1rem; }
+    .blog-content h2 { font-size: 1.25rem; font-weight: 600; color: var(--text-color); margin: 2rem 0 1rem; }
+    .blog-content blockquote { margin: 1.5rem 0; padding-left: 1rem; border-left: 4px solid var(--primary-color); font-style: italic; color: var(--text-color-medium); }
+    .blog-content a { color: var(--primary-color); text-decoration: none; border-bottom: 1px solid var(--primary-color); }
+    .blog-tags { display: flex; align-items: center; gap: 0.5rem; margin-top: 2rem; flex-wrap: wrap; }
+    .blog-tags .tag-item { font-size: 0.75rem; background-color: var(--card-bg-color); padding: 0.25rem 0.75rem; border-radius: 9999px; }
+    #related-articles .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    #related-articles .related-card { background-color: var(--card-bg-color); border-radius: 8px; overflow: hidden; cursor: pointer; }
+    #related-articles .related-card img { width: 100%; height: 6rem; object-fit: cover; }
+    #related-articles .related-card .p-2 { padding: 0.5rem; }
+    #related-articles .related-card h4 { font-size: 0.875rem; font-weight: 500; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    #related-articles .related-card div { margin-top: 0.25rem; font-size: 0.75rem; color: var(--text-color-light); }
+
+    /* --- List Screen (View All) --- */
+    #list-screen .app-main { padding-top: 60px; }
+    #list-header { justify-content: space-between; }
+    #list-header-title {
+        font-size: 1.125rem; font-weight: 600;
+        position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    #list-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .list-card {
+        background-color: var(--card-bg-color); border-radius: 8px;
+        overflow: hidden; cursor: pointer;
+    }
+    .list-card .card-image-wrapper { position: relative; height: 9rem; }
+    .list-card img { width: 100%; height: 100%; object-fit: cover; }
+    .list-card .card-content { padding: 0.75rem; }
+    .list-card h3 {
+        font-size: 0.875rem; font-weight: 600; line-height: 1.3; margin: 0.25rem 0;
+        overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .list-pagination-controls { text-align: center; margin-top: 1.5rem; }
+    .load-more-button {
+      padding: 0.75rem 1.5rem; background-color: var(--primary-color);
+      color: white; border-radius: 8px; border: none; cursor: pointer;
+      font-weight: 500; transition: background-color 0.2s;
+    }
+    .load-more-button:hover { background-color: #c32d39; }
+    .load-more-button:disabled { background-color: var(--text-color-light); cursor: not-allowed; }
+
+    /* --- Favorites Screen --- */
+    .favorites-header { justify-content: space-between; }
+    .favorites-header h2 { font-size: 1.25rem; font-weight: 600; }
+    #favorites-screen .app-main { padding-top: 4.5rem; }
+    #favorites-screen .sort-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    #favorites-screen .sort-bar span { font-size: 0.875rem; color: var(--text-color-medium); }
+    #favorites-screen .sort-select { background-color: var(--card-bg-color); color: white; font-size: 0.875rem; padding: 0.25rem 0.5rem; border-radius: 8px; border: 1px solid var(--border-color); }
+    #favorites-grid .favorite-card { display: flex; background-color: var(--card-bg-color); border-radius: 8px; overflow: hidden; height: 8rem; margin-bottom: 1rem; }
+    #favorites-grid .favorite-card .card-image-wrapper { width: 33.33%; height: 100%; }
+    #favorites-grid .favorite-card img { width: 100%; height: 100%; object-fit: cover; }
+    #favorites-grid .favorite-card .card-content { width: 66.67%; padding: 0.75rem; display: flex; flex-direction: column; justify-content: space-between; }
+    #favorites-grid .card-content-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    #favorites-grid .remove-favorite-btn { cursor: pointer; color: var(--text-color-light); }
+    #favorites-grid .favorite-card h3 { font-size: 1rem; font-weight: 600; line-height: 1.3; margin-top: 0.25rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    
+    /* Empty State */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem 1rem; text-align: center; }
+    .empty-state .icon-wrapper { width: 6rem; height: 6rem; display: flex; align-items: center; justify-content: center; background-color: var(--card-bg-color); border-radius: 50%; margin-bottom: 1rem; }
+    .empty-state i { font-size: 3rem; color: var(--primary-color); }
+    .empty-state h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .empty-state p { font-size: 0.875rem; color: var(--text-color-light); max-width: 20rem; }
+    .empty-state button { margin-top: 1rem; background-color: var(--primary-color); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer; }
+
+    /* --- Bottom Navigation --- */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--card-bg-color); border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(3, 1fr); z-index: 100; }
+    .nav-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem; color: var(--text-color-light); cursor: pointer; border: none; background: none; transition: color 0.2s; }
+    .nav-button i { font-size: 1.375rem; }
+    .nav-button.active { color: var(--primary-color); }
+
+    /* Toast Notification */
+    .toast { position: fixed; top: 4rem; left: 50%; transform: translateX(-50%); background-color: var(--card-bg-color); color: white; padding: 0.5rem 1rem; border-radius: 8px; box-shadow: var(--shadow-lg); z-index: 200; display: flex; align-items: center; transition: opacity 0.3s, transform 0.3s; opacity: 0; transform: translate(-50%, -20px); }
+    .toast.show { opacity: 1; transform: translateX(-50%); }
+    .toast i { color: var(--primary-color); margin-right: 0.5rem; }
+    
+    /* Share Modal */
+    .share-modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 200; }
+    .share-modal-content { background-color: var(--card-bg-color); width: 100%; border-radius: 1rem 1rem 0 0; padding: 1.25rem; transform: translateY(100%); transition: transform 0.3s ease-out; }
+    .share-modal-overlay.show .share-modal-content { transform: translateY(0); }
+    .share-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .share-modal-header h3 { font-size: 1.125rem; font-weight: 600; }
+    .share-modal-header i { cursor: pointer; font-size: 1.5rem; }
+    .share-options-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; text-align: center; }
+    .share-option { cursor: pointer; }
+    .share-option-icon { width: 3rem; height: 3rem; border-radius: 50%; background-color: var(--background-color); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; }
+    .share-option-icon i { font-size: 1.5rem; color: white; }
+    .share-option span { font-size: 0.75rem; }
+  </style>
+</head>
+
+<body>
+  <!-- App Screens -->
+  <div id="app-container">
+    <!-- Home Screen -->
+    <div id="home-screen" class="screen-container">
+      <header class="app-header home-header">
+        <div class="home-header-top">
+          <h1 class="app-logo">DailySuperHeroes</h1>
+          <div class="home-header-icons">
+            <i class="ri-notification-3-line"></i>
+            <i class="ri-refresh-line" id="refresh-btn"></i>
+          </div>
+        </div>
+        <div class="search-bar-wrapper">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search superheroes, stories..." class="search-bar" />
+        </div>
+      </header>
+      <main class="app-main">
+        <section id="trending-section" class="hidden">
+            <div class="section-header">
+                <h2 class="section-title">Trending Stories</h2>
+                <span class="section-link" data-title="Trending Stories">View All</span>
+            </div>
+            <div id="trending-grid" class="trending-scroll"></div>
+        </section>
+        <section id="featured-section" class="hidden">
+            <div class="section-header">
+                <h2 class="section-title">Featured</h2>
+                <span class="section-link" data-title="Featured Stories">More</span>
+            </div>
+            <div id="featured-grid"></div>
+        </section>
+        <section id="latest-section">
+            <div class="section-header">
+                <h2 class="section-title">Latest Stories</h2>
+                <span class="section-link" data-title="Latest Stories">View All</span>
+            </div>
+            <div id="latest-grid">
+                <div class="skeleton" style="height: 18rem; border-radius: 8px; margin-bottom: 1rem;"></div>
+                <div class="skeleton" style="height: 18rem; border-radius: 8px;"></div>
+            </div>
+        </section>
+      </main>
+    </div>
+    
+    <!-- List Screen (View All) -->
+    <div id="list-screen" class="screen-container hidden">
+        <header class="app-header" id="list-header">
+            <button id="list-back-btn" class="header-icon-button" style="background: none;"><i class="ri-arrow-left-line"></i></button>
+            <h2 id="list-header-title"></h2>
+        </header>
+        <main class="app-main">
+            <div id="list-grid"></div>
+            <div id="list-pagination-controls" class="list-pagination-controls"></div>
+        </main>
+    </div>
+
+    <!-- Favorites Screen -->
+    <div id="favorites-screen" class="screen-container hidden">
+      <header class="app-header favorites-header">
+        <h2 class="header-title">My Favorites</h2>
+        <i class="ri-search-line ri-lg"></i>
+      </header>
+      <main class="app-main">
+        <div class="sort-bar">
+            <span id="favorites-count"></span>
+            <select class="sort-select">
+                <option>Recent</option>
+                <option>Oldest</option>
+            </select>
+        </div>
+        <div id="favorites-grid"></div>
+        <div id="favorites-empty-state" class="hidden">
+            <div class="empty-state">
+                <div class="icon-wrapper"><i class="ri-heart-line"></i></div>
+                <h3>No favorites yet</h3>
+                <p>Start exploring stories and save your favorites to read them later</p>
+                <button id="explore-stories-btn">Explore Stories</button>
+            </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Individual Blog Screen -->
+    <div id="blog-screen" class="screen-container hidden">
+        <div id="blog-container">
+             <!-- Loading State -->
+            <div class="skeleton" style="height: 16rem;"></div>
+            <main class="app-main">
+                <div class="skeleton" style="height: 2rem; width: 90%; border-radius: 4px; margin-bottom: 1rem;"></div>
+                <div class="skeleton" style="height: 1rem; width: 40%; border-radius: 4px; margin-bottom: 2rem;"></div>
+                <div class="skeleton" style="height: 1rem; border-radius: 4px; margin-bottom: 0.5rem;"></div>
+                <div class="skeleton" style="height: 1rem; border-radius: 4px; margin-bottom: 0.5rem;"></div>
+                <div class="skeleton" style="height: 1rem; width: 70%; border-radius: 4px;"></div>
+            </main>
+        </div>
+    </div>
+  </div>
+  
+  <!-- Fixed Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button id="nav-home" class="nav-button active" aria-label="Home">
+      <i class="ri-home-5-fill"></i><span>Home</span>
+    </button>
+    <button id="nav-favorites" class="nav-button" aria-label="Favorites">
+      <i class="ri-heart-line"></i><span>Favorites</span>
+    </button>
+    <button id="nav-profile" class="nav-button" aria-label="Profile">
+      <i class="ri-user-line"></i><span>Profile</span>
+    </button>
+  </nav>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">
+    <i class="ri-heart-fill"></i>
+    <span id="toast-message"></span>
+  </div>
+
+
+  <!-- JAVASCRIPT LOGIC (Updated for new UI) -->
+  <script id="favorites-service">
+    document.addEventListener("DOMContentLoaded", () => {
+      const FAVORITES_KEY = 'superheroAppFavoritesV2';
+      let favoritePostIds = new Set();
+      const loadFavorites = () => {
+        const stored = localStorage.getItem(FAVORITES_KEY);
+        favoritePostIds = new Set(stored ? JSON.parse(stored).map(Number) : []);
+      };
+      const saveFavorites = () => localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favoritePostIds]));
+      loadFavorites();
+      window.favoritesService = {
+        addFavorite: (id) => { favoritePostIds.add(Number(id)); saveFavorites(); },
+        removeFavorite: (id) => { favoritePostIds.delete(Number(id)); saveFavorites(); },
+        isFavorite: (id) => favoritePostIds.has(Number(id)),
+        getFavoriteIds: () => [...favoritePostIds].reverse(),
+      };
+    });
+  </script>
+  <script id="api-service">
+    document.addEventListener("DOMContentLoaded", () => {
+      const API_URL = "https://dailysuperheroes.com/wp-json/wp/v2/posts";
+      const POSTS_PER_PAGE = 10;
+      let allPosts = new Map();
+      let listCurrentPage = 1;
+      let listTotalPages = 1;
+      
+      async function fetchHomePosts(isRefresh = false) {
+        const ui = window.uiRenderer;
+        if (!isRefresh) {
+            ui.showHomeLoading();
+        }
+        try {
+          const response = await fetch(`${API_URL}?_embed&per_page=${POSTS_PER_PAGE}&page=1`);
+          if (!response.ok) throw new Error("Network response was not ok");
+          const newPosts = await response.json();
+          newPosts.forEach(post => allPosts.set(post.id, post));
+          if (isRefresh && newPosts.length > 0) {
+            window.notificationService?.checkForNewPost(newPosts[0]);
+          }
+          ui.renderHomeScreen(newPosts);
+        } catch (error) {
+          console.error("Error fetching home posts:", error);
+          if (!isRefresh) ui.showHomeError("Failed to load posts.");
+        }
+      }
+
+      async function fetchPaginatedPosts(isLoadMore = false) {
+          const ui = window.uiRenderer;
+          if (isLoadMore) {
+              listCurrentPage++;
+              ui.setLoadMoreButtonState(true);
+          } else {
+              listCurrentPage = 1;
+              listTotalPages = 1;
+              ui.showListLoading();
+          }
+          try {
+              const response = await fetch(`${API_URL}?_embed&per_page=${POSTS_PER_PAGE}&page=${listCurrentPage}`);
+              if (!response.ok) throw new Error("Network response was not ok.");
+              listTotalPages = parseInt(response.headers.get('X-WP-TotalPages'));
+              const newPosts = await response.json();
+              newPosts.forEach(post => allPosts.set(post.id, post));
+              ui.renderListGrid(newPosts, isLoadMore);
+              ui.renderListPaginationControls(listCurrentPage < listTotalPages);
+          } catch (error) {
+              console.error("Error fetching paginated posts:", error);
+              if (!isLoadMore) ui.showListError("Failed to load posts.");
+          } finally {
+              if (isLoadMore) ui.setLoadMoreButtonState(false);
+          }
+      }
+      
+      async function fetchSingleBlogPost(slug) {
+        const ui = window.uiRenderer;
+        const cachedPost = [...allPosts.values()].find(p => p.slug === slug);
+        if (cachedPost) {
+          ui.renderBlogPost(cachedPost);
+          return;
+        }
+        ui.showPostLoading();
+        try {
+          const response = await fetch(`${API_URL}?slug=${slug}&_embed`);
+          if (!response.ok) throw new Error("Network response not ok");
+          const posts = await response.json();
+          if (posts.length === 0) throw new Error(`No post with slug: ${slug}`);
+          const post = posts[0];
+          allPosts.set(post.id, post);
+          ui.renderBlogPost(post);
+        } catch (error) {
+          console.error("Error fetching single post:", error);
+          ui.renderBlogPostError("Failed to load this article.");
+        }
+      }
+      
+      window.blogService = {
+        fetchHomePosts, fetchPaginatedPosts, fetchSingleBlogPost,
+        getPostById: (id) => allPosts.get(id),
+        getPostsByIds: (ids) => ids.map(id => allPosts.get(id)).filter(Boolean),
+        getAllPosts: () => [...allPosts.values()]
+      };
+    });
+  </script>
+  <script id="ui-renderer">
+    document.addEventListener("DOMContentLoaded", () => {
+        const screens = { home: document.getElementById('home-screen'), favorites: document.getElementById('favorites-screen'), blog: document.getElementById('blog-screen'), list: document.getElementById('list-screen') };
+        const navButtons = { home: document.getElementById('nav-home'), favorites: document.getElementById('nav-favorites'), profile: document.getElementById('nav-profile') };
+        let currentPostId = null;
+
+        const getCategory = (post) => (post.id % 2 === 0 ? "dc" : "marvel");
+        const getImageUrl = (post, width = 400, height = 300) => {
+            const featuredMedia = post._embedded?.["wp:featuredmedia"]?.[0];
+            return featuredMedia ? featuredMedia.source_url : `https://readdy.ai/api/search-image?query=superhero%20comic%20style&width=${width}&height=${height}&seq=${post.id}`;
+        }
+        const formatDate = (dateString) => new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+        
+        // --- Card Creation ---
+        const createTrendingCard = (post, rank) => {
+            const card = document.createElement("div");
+            card.className = "trending-card";
+            card.dataset.postSlug = post.slug;
+            card.innerHTML = `<div class="card-image-wrapper"><img src="${getImageUrl(post, 200, 150)}" alt="" loading="lazy"><div class="card-rank">#${rank}</div></div><div class="card-content"><span class="category-tag ${getCategory(post)}">${getCategory(post).toUpperCase()}</span><h3>${post.title.rendered}</h3><div class="card-meta"><span>${formatDate(post.date)}</span><span>•</span><span>5 min</span></div></div>`;
+            card.addEventListener('click', () => navigateTo('blog', { slug: post.slug }));
+            return card;
+        };
+        const createFeaturedCard = (post) => {
+            const card = document.createElement("div");
+            card.className = "story-card featured-card";
+            card.innerHTML = `<div class="card-image-wrapper" data-post-slug="${post.slug}"><img src="${getImageUrl(post, 375, 200)}" alt=""><div class="card-overlay"><div class="card-overlay-content"><div class="card-overlay-text"><span class="category-tag ${getCategory(post)}">${getCategory(post).toUpperCase()}</span><h3>${post.title.rendered}</h3><div class="card-meta"><span>${formatDate(post.date)}</span><span>•</span><span>5 min read</span></div></div></div></div></div>`;
+            const imageWrapper = card.querySelector('.card-image-wrapper');
+            imageWrapper.addEventListener('click', (e) => { if (!e.target.closest('.favorite-button')) { navigateTo('blog', { slug: post.slug }) }});
+            imageWrapper.querySelector('.card-overlay-content').appendChild(createFavoriteButton(post.id));
+            return card;
+        };
+        const createLatestStoryCard = (post) => {
+            const card = document.createElement("article");
+            card.className = "story-card";
+            card.innerHTML = `<div class="card-image-wrapper"><img src="${getImageUrl(post, 375, 200)}" alt="" loading="lazy"></div><div class="card-content" data-post-slug="${post.slug}"><div class="card-content-header"><span class="category-tag ${getCategory(post)}">${getCategory(post).toUpperCase()}</span><div class="card-views"><i class="ri-eye-line"></i><span>2.4k</span></div></div><h3>${post.title.rendered}</h3><p>${post.excerpt.rendered.replace(/<[^>]+>/g, '')}</p><div class="card-meta"><span>${formatDate(post.date)}</span><span>•</span><span>4 min read</span></div></div>`;
+            card.querySelector('.card-image-wrapper').appendChild(createFavoriteButton(post.id));
+            card.querySelector('.card-content').addEventListener('click', () => navigateTo('blog', { slug: post.slug }));
+            return card;
+        };
+        const createFavoriteCard = (post) => {
+            const card = document.createElement("div");
+            card.className = "favorite-card";
+            card.dataset.favoriteId = post.id;
+            card.innerHTML = `<div class="card-image-wrapper" data-post-slug="${post.slug}"><img src="${getImageUrl(post, 120, 120)}" alt=""></div><div class="card-content"><div><div class="card-content-header"><span class="category-tag ${getCategory(post)}">${getCategory(post).toUpperCase()}</span><i class="ri-close-line remove-favorite-btn" data-id="${post.id}"></i></div><h3>${post.title.rendered}</h3></div><div class="card-meta"><span>${formatDate(post.date)}</span><span>•</span><span>5 min read</span></div></div>`;
+            card.querySelector('.remove-favorite-btn').addEventListener('click', (e) => { e.stopPropagation(); const id = e.target.dataset.id; window.favoritesService.removeFavorite(id); showToast("Removed from favorites"); renderFavoritesGrid(); updateAllFavoriteIcons(id, false); });
+            card.querySelector('.card-image-wrapper').addEventListener('click', () => navigateTo('blog', { slug: post.slug }));
+            return card;
+        };
+        const createListCard = (post) => {
+            const card = document.createElement("div");
+            card.className = "list-card";
+            card.innerHTML = `<div class="card-image-wrapper"><img src="${getImageUrl(post, 200, 150)}" loading="lazy"></div><div class="card-content" data-post-slug="${post.slug}"><span class="category-tag ${getCategory(post)}">${getCategory(post).toUpperCase()}</span><h3>${post.title.rendered}</h3><div class="card-meta" style="margin-top: 0.25rem;"><span>${formatDate(post.date)}</span></div></div>`;
+            card.querySelector('.card-image-wrapper').appendChild(createFavoriteButton(post.id));
+            card.querySelector('.card-content').addEventListener('click', () => navigateTo('blog', {slug: post.slug}));
+            return card;
+        };
+        const createFavoriteButton = (postId) => {
+            const isFav = window.favoritesService.isFavorite(postId);
+            const button = document.createElement('div');
+            button.className = 'favorite-button';
+            button.dataset.postId = postId;
+            button.innerHTML = `<i class="ri-heart-${isFav ? 'fill is-favorite' : 'line'}"></i>`;
+            button.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(postId, e.currentTarget); });
+            return button;
+        };
+
+        // --- Screen Rendering ---
+        const renderHomeScreen = (posts) => {
+            if (posts.length === 0) { showHomeError("No posts found."); return; }
+            document.getElementById('trending-grid').innerHTML = '';
+            posts.slice(1, 5).forEach((post, index) => document.getElementById('trending-grid').appendChild(createTrendingCard(post, index + 1)));
+            document.getElementById('trending-section').classList.remove('hidden');
+            document.getElementById('featured-grid').innerHTML = '';
+            document.getElementById('featured-grid').appendChild(createFeaturedCard(posts[0]));
+            document.getElementById('featured-section').classList.remove('hidden');
+            document.getElementById('latest-grid').innerHTML = '';
+            posts.slice(0, 4).forEach(post => document.getElementById('latest-grid').appendChild(createLatestStoryCard(post)));
+        };
+        const renderListGrid = (posts, isAppending) => {
+            const grid = document.getElementById("list-grid");
+            if (!isAppending) grid.innerHTML = '';
+            posts.forEach(post => grid.appendChild(createListCard(post)));
+        };
+        const renderFavoritesGrid = () => {
+            const favoritesGrid = document.getElementById("favorites-grid");
+            const emptyState = document.getElementById("favorites-empty-state");
+            const countEl = document.getElementById("favorites-count");
+            const favoriteIds = window.favoritesService.getFavoriteIds();
+            const favoritePosts = window.blogService.getPostsByIds(favoriteIds);
+            favoritesGrid.innerHTML = "";
+            countEl.textContent = `${favoritePosts.length} stories saved`;
+            if (favoritePosts.length === 0) { favoritesGrid.classList.add('hidden'); emptyState.classList.remove('hidden'); }
+            else { favoritesGrid.classList.remove('hidden'); emptyState.classList.add('hidden'); favoritePosts.forEach(post => favoritesGrid.appendChild(createFavoriteCard(post))); }
+        };
+        const renderBlogPost = (post) => {
+            currentPostId = post.id;
+            const container = document.getElementById("blog-container");
+            container.innerHTML = `<div class="blog-hero"><img src="${getImageUrl(post, 800, 400)}" alt="${post.title.rendered}"><div class="blog-hero-overlay"><button id="back-btn" class="header-icon-button"><i class="ri-arrow-left-line"></i></button><div class="header-icon-group"><button id="share-btn" class="header-icon-button"><i class="ri-share-line"></i></button><div id="detail-favorite-wrapper"></div></div></div></div><main class="app-main"><span class="category-tag ${getCategory(post)}">${getCategory(post).toUpperCase()}</span><h1>${post.title.rendered}</h1><div class="author-info"><img src="https://readdy.ai/api/search-image?query=male%20journalist%20headshot&width=50&height=50&seq=10" alt="Author"><div class="author-details"><p>Alex Cruz</p><div><span>${formatDate(post.date)}</span> • <span>5 min read</span></div></div></div><div class="blog-content">${post.content.rendered}</div><div id="related-articles"></div></main>`;
+            container.querySelector('#detail-favorite-wrapper').appendChild(createFavoriteButton(post.id));
+            container.querySelector('#back-btn').addEventListener('click', () => history.back());
+            container.querySelector('#share-btn').addEventListener('click', showShareModal);
+            renderRelatedPosts(post.id);
+            if (window.instgrm) window.instgrm.Embeds.process();
+        };
+        const renderRelatedPosts = (currentPostId) => {
+            const container = document.getElementById('related-articles');
+            const related = window.blogService.getAllPosts().filter(p => p.id !== currentPostId).slice(0, 2);
+            if (related.length === 0) return;
+            container.innerHTML = `<h2 class="section-title" style="margin-top: 2rem; margin-bottom: 1rem;">Related Articles</h2><div class="grid"></div>`;
+            const grid = container.querySelector('.grid');
+            related.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'related-card'; card.dataset.postSlug = post.slug;
+                card.innerHTML = `<img src="${getImageUrl(post, 180, 120)}" alt=""><div class="p-2"><h4>${post.title.rendered}</h4><div><span>${formatDate(post.date)}</span></div></div>`;
+                card.addEventListener('click', () => navigateTo('blog', {slug: post.slug}));
+                grid.appendChild(card);
+            });
+        };
+
+        // --- UI State & Actions ---
+        const navigateTo = (screenName, data = {}) => {
+            window.scrollTo(0, 0);
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+            Object.values(navButtons).forEach(b => {
+                b.classList.remove('active');
+                const icon = b.querySelector('i'); const iconName = b.id.split('-')[1];
+                icon.className = `ri-${iconName}-${iconName === 'profile' ? 'line' : 'line'}`;
+            });
+            const navBtn = navButtons[screenName] || navButtons.home;
+            navBtn.classList.add('active');
+            const icon = navBtn.querySelector('i'); const iconName = navBtn.id.split('-')[1];
+            icon.className = `ri-${iconName}-${iconName === 'profile' ? 'fill' : 'fill'}`;
+
+            if (screenName === 'blog') {
+                history.pushState({ page: 'blog', slug: data.slug }, ``, `#/post/${data.slug}`);
+                window.blogService.fetchSingleBlogPost(data.slug);
+            } else if (screenName === 'favorites') {
+                history.pushState({ page: 'favorites' }, '', '#/favorites');
+                renderFavoritesGrid();
+            } else if (screenName === 'list') {
+                history.pushState({ page: 'list', title: data.title }, '', `#/list/${data.title.replace(/\s+/g, '-').toLowerCase()}`);
+                document.getElementById('list-header-title').textContent = data.title;
+                window.blogService.fetchPaginatedPosts();
+            } else { // Home
+                history.pushState({ page: 'home' }, '', window.location.pathname.split('#')[0]);
+            }
+        };
+        const toggleFavorite = (postId, buttonEl) => {
+            const isFav = window.favoritesService.isFavorite(postId);
+            if (isFav) { window.favoritesService.removeFavorite(postId); showToast("Removed from favorites"); }
+            else { window.favoritesService.addFavorite(postId); showToast("Added to favorites"); buttonEl.querySelector('i').classList.add('favorite-animation'); setTimeout(() => buttonEl.querySelector('i').classList.remove('favorite-animation'), 500); }
+            updateAllFavoriteIcons(postId, !isFav);
+        };
+        const updateAllFavoriteIcons = (postId, isFavorite) => { document.querySelectorAll(`.favorite-button[data-post-id="${postId}"] i`).forEach(icon => { icon.className = `ri-heart-${isFavorite ? 'fill is-favorite' : 'line'}`; }); };
+        const showToast = (message) => { const toast = document.getElementById('toast'); document.getElementById('toast-message').textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); };
+        const showShareModal = () => { /* ... modal logic from previous step ... */ };
+        const showPostLoading = () => { document.getElementById('blog-container').innerHTML = `<div class="skeleton" style="height: 16rem;"></div><main class="app-main"><div class="skeleton" style="height: 2rem; width: 90%; border-radius: 4px; margin-bottom: 1rem;"></div><div class="skeleton" style="height: 1rem; width: 40%; border-radius: 4px; margin-bottom: 2rem;"></div><div class="skeleton" style="height: 1rem; border-radius: 4px; margin-bottom: 0.5rem;"></div><div class="skeleton" style="height: 1rem; border-radius: 4px; margin-bottom: 0.5rem;"></div><div class="skeleton" style="height: 1rem; width: 70%; border-radius: 4px;"></div></main>`; };
+
+        window.uiRenderer = {
+            renderHomeScreen, renderBlogPost, navigateTo, renderListGrid,
+            renderListPaginationControls: (show) => {
+                const container = document.getElementById("list-pagination-controls");
+                container.innerHTML = show ? `<button id="load-more-btn" class="load-more-button">Load More</button>` : "";
+                if (show) container.querySelector("button").addEventListener('click', () => window.blogService.fetchPaginatedPosts(true));
+            },
+            setLoadMoreButtonState: (isLoading) => {
+                const btn = document.getElementById('load-more-btn');
+                if (btn) { btn.disabled = isLoading; btn.textContent = isLoading ? 'Loading...' : 'Load More'; }
+            },
+            showHomeLoading: () => { document.getElementById('latest-grid').innerHTML = `<div class="skeleton" style="height: 18rem; border-radius: 8px; margin-bottom: 1rem;"></div><div class="skeleton" style="height: 18rem; border-radius: 8px;"></div>`; ['trending-section', 'featured-section'].forEach(id => document.getElementById(id).classList.add('hidden')); },
+            showHomeError: (msg) => { document.getElementById('latest-grid').innerHTML = `<div class="empty-state" style="background-color: var(--card-bg-color); border-radius: 8px;"><p>${msg}</p><button id="retry-btn">Retry</button></div>`; document.getElementById('retry-btn').addEventListener('click', () => window.blogService.fetchHomePosts()); },
+            showListLoading: () => { document.getElementById('list-grid').innerHTML = Array(4).fill('<div class="skeleton" style="height: 13rem; border-radius: 8px;"></div>').join(''); document.getElementById('list-pagination-controls').innerHTML = ''; },
+            showListError: (msg) => { document.getElementById('list-grid').innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><p>${msg}</p><button onclick="window.blogService.fetchPaginatedPosts()">Retry</button></div>`; },
+            renderBlogPostError: (msg) => { document.getElementById("blog-container").innerHTML = `<div class="empty-state"><p>${msg}</p></div>`; },
+        };
+        
+        // Initial Event Listeners
+        navButtons.home.addEventListener('click', () => navigateTo('home'));
+        navButtons.favorites.addEventListener('click', () => navigateTo('favorites'));
+        document.getElementById("refresh-btn").addEventListener("click", () => window.blogService.fetchHomePosts(true));
+        document.getElementById("explore-stories-btn").addEventListener("click", () => navigateTo('home'));
+        document.querySelectorAll('.section-link').forEach(link => link.addEventListener('click', (e) => navigateTo('list', { title: e.target.dataset.title })));
+        document.getElementById('list-back-btn').addEventListener('click', () => history.back());
+    });
+  </script>
+  <script id="capacitor-integration">
+    // Unchanged from previous step
+    document.addEventListener('deviceready', () => {
+      const { LocalNotifications, App } = Capacitor.Plugins;
+      const LATEST_POST_ID_KEY = 'latestPostId';
+      let hasPermission = false;
+      App.addListener('appUrlOpen', (event) => { const slug = event.url.split('/post/').pop(); if (slug) { window.uiRenderer.navigateTo('blog', { slug }); } });
+      async function setupNotifications() { try { const permissionStatus = await LocalNotifications.checkPermissions(); if (permissionStatus.display !== 'granted') { const newStatus = await LocalNotifications.requestPermissions(); hasPermission = newStatus.display === 'granted'; } else { hasPermission = true; } } catch (e) { console.error("Error setting up notifications", e); } }
+      async function checkForNewPost(latestPost) { if (!hasPermission || !latestPost) return; const lastKnownId = localStorage.getItem(LATEST_POST_ID_KEY); const newPostId = latestPost.id.toString(); if (lastKnownId && newPostId !== lastKnownId) { await LocalNotifications.schedule({ notifications: [{ title: "New Article Published!", body: latestPost.title.rendered, id: parseInt(newPostId), sound: null, smallIcon: 'res://mipmap/ic_launcher', extra: { url: `yourappscheme://post/${latestPost.slug}` } }] }); } localStorage.setItem(LATEST_POST_ID_KEY, newPostId); }
+      setupNotifications();
+      window.notificationService = { checkForNewPost };
+    }, false);
+  </script>
+  <script id="app-init">
+    document.addEventListener("DOMContentLoaded", () => {
+      const handleRouting = () => {
+        const hash = window.location.hash;
+        if (hash.startsWith('#/post/')) {
+          const slug = hash.substring(7);
+          window.uiRenderer.navigateTo('blog', { slug });
+        } else if (hash.startsWith('#/list/')) {
+            const title = hash.substring(7).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            window.uiRenderer.navigateTo('list', { title: title || "All Stories" });
+        } else if (hash === '#/favorites') {
+          window.uiRenderer.navigateTo('favorites');
+          if(window.blogService.getAllPosts().length === 0) { window.blogService.fetchHomePosts(); }
+        } else {
+          window.uiRenderer.navigateTo('home');
+          window.blogService.fetchHomePosts();
+        }
+      };
+      
+      window.addEventListener("popstate", (event) => { handleRouting(); });
+      handleRouting();
+    });
+  </script>
+</body>
+</html>
